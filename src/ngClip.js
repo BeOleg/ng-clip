@@ -31,7 +31,6 @@ angular.module('ngClipboard', []).
       },
       restrict: 'A',
       link: function (scope, element, attrs) {
-        // Create the clip object
         var clip = new ZeroClipboard(element);
         clip.on( 'load', function(client) {
           var onMousedown = function (client) {
@@ -40,7 +39,7 @@ angular.module('ngClipboard', []).
               scope.$apply(scope.clipClick);
             }
           };
-          client.on('mousedown', onMousedown);
+          client.on('dataRequested', onMousedown);
 
           scope.$on('$destroy', function() {
             client.off('mousedown', onMousedown);
