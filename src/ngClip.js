@@ -22,8 +22,7 @@ angular.module('ngClipboard', []).
       allowScriptAccess: "always",
       forceHandCursor: true
     });
-  }]).
-  directive('clipCopy', ['$window', 'ngClip', function ($window, ngClip) {
+  directive('clipCopy', ['$window', 'ngClip', 'zeroclipboardService', function ($window, ngClip, zeroclipboardService) {
     return {
       scope: {
         clipCopy: '&',
@@ -31,7 +30,8 @@ angular.module('ngClipboard', []).
       },
       restrict: 'A',
       link: function (scope, element, attrs) {
-        var clip = new ZeroClipboard(element);
+        var clip = zeroclipboardService.get(scope.objId) || new ZeroClipboard();
+        scope.objId = objId || zeroclipboardService.set(clip);
         clip.on( 'load', function(client) {
           var onMousedown = function (client) {
             client.setText(scope.$eval(scope.clipCopy));
@@ -42,10 +42,22 @@ angular.module('ngClipboard', []).
           client.on('dataRequested', onMousedown);
 
           scope.$on('$destroy', function() {
-            client.off('mousedown', onMousedown);
+            client.off('dataRequested', onMousedown);
             client.unglue(element);
           });
         });
       }
     }
-  }]);
+  }]).
+  service('zeroclipboardService', function(){
+    var zcList = [];
+    return{
+      get: function(id){
+        return zcList[id];
+      },
+      set: function(obj){
+        zcList.push(obj);
+        return zcList.length - 1;
+      }
+    }
+  });
